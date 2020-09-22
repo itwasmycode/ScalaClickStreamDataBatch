@@ -1,30 +1,21 @@
-import frameless.functions._
 import frameless.syntax._
-import frameless.{TypedDataset, TypedEncoder}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkConf
-import org.apache.spark.sql._
+import java.sql.Date
 
-object Main extends App{
+
+object Main extends App with SessionWrapper {
   Logger.getLogger("org").setLevel(Level.ERROR)
   case class BuyObj(sessID:String,
-                    date:String,
+                    date:Date,
                     itemID:String,
-                   price:String,
-                   qty:String)
-  val conf = new SparkConf().setMaster("local[*]")
-  val spSess = SparkSession
-    .builder
-    .config(conf)
-    .getOrCreate()
+                    price:Long,
+                    qty:String)
 
-  import spSess.implicits._
-  val preDF =spSess.read
-    .option("header","TRUE")
-    .csv("src/data/buys.dat")
-    .as[BuyObj]
 
-  val typedDF = TypedDataset.create(preDF)(TypedEncoder[BuyObj])
+  case class ClickObj(sessID: String,
+                      date: Date,
+                      itemID: String,
+                      pType: String)
 
-  typedDF.select(typedDF('sessID)).show().run()
+  typedClickDF.select(typedClickDF('date)).show().run()
 }

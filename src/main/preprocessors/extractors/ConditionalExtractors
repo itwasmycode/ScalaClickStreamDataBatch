@@ -5,6 +5,7 @@ object ConditionalExtractors{
         .when(col("type")===0, "missing")
         .when(length(col("type"))>=8, "brand")
         .otherwise("normal"))
+
   def userPathExtractor(df:DataFrame) : DataFrame =
     df
         .select("sessID","itemID","fullDate","type")
