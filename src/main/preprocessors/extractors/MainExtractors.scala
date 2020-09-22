@@ -12,19 +12,25 @@ object MainExtractors {
         .when(hour(col("date"))>=18 && hour(col("date"))<=22, "evening")
         .otherwise("midnight")
     )
-  def typeInfExtractor(df : DataFrame): DataFrame =
+  def dateInfExtractor(df : DataFrame): DataFrame =
     df.withColumn("weekend",
           when(col("day")==="Sun" || col("day")==="Sat",1)
-          otherwise(0))
-      .withColumn("specOffer"
-          ,when(col("type")==="S", "special")
-          .when(col("type")===0, "missing")
-          .when(length(col("type"))>=8, "brand")
-          .otherwise("normal")
+          otherwise(0)
     )
 
-  def userPathExtractor(df:DataFrame) : DataFrame =
-    df
-    .select("sessID","itemID","fullDate","type")
-    .withColumn("userPath",collect_set("type").over(Window.partitionBy("sessID")))
+
+
+  def timeSpentEachSession(df: DataFrame) = df.join(df.groupBy("sessID").agg(min("date"),max("date"))
+    .withColumn("passedInSess(minute)", (to_timestamp(col("max(date)")).cast(LongType)-
+      to_timestamp(col("min(date)")).cast(LongType))/60)
+    .drop("min(date)","max(date)"),Seq("sessID"))
+
+  def itemPopularityExtractor(df:DataFrame) = {
+    val df1 = df.groupBy("sDate","itemID").count()
+      .withColumnRenamed("sDate","sDate1")
+      .withColumnRenamed("itemID","itemID1")
+    df.join(df1,df("sDate")===df1("sDate1") && df("itemID")===df1("itemID1"))
+  }
+
+
 }
