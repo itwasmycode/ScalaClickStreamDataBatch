@@ -5,6 +5,7 @@ import java.sql.Date
 
 object Main extends App with SessionWrapper {
   Logger.getLogger("org").setLevel(Level.ERROR)
+  /* Implementing cclasses*/
   case class BuyObj(sessID:String,
                     date:Date,
                     itemID:String,
