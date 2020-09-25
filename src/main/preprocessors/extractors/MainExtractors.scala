@@ -12,6 +12,7 @@ object MainExtractors {
         .when(hour(col("date"))>=18 && hour(col("date"))<=22, "evening")
         .otherwise("midnight")
     )
+
   def dateInfExtractor(df : DataFrame): DataFrame =
     df.withColumn("weekend",
           when(col("day")==="Sun" || col("day")==="Sat",1)
@@ -20,10 +21,6 @@ object MainExtractors {
 
 
 
-  def timeSpentEachSession(df: DataFrame) = df.join(df.groupBy("sessID").agg(min("date"),max("date"))
-    .withColumn("passedInSess(minute)", (to_timestamp(col("max(date)")).cast(LongType)-
-      to_timestamp(col("min(date)")).cast(LongType))/60)
-    .drop("min(date)","max(date)"),Seq("sessID"))
 
   def itemPopularityExtractor(df:DataFrame) = {
     val df1 = df.groupBy("sDate","itemID").count()
