@@ -3,59 +3,72 @@ import java.sql.Timestamp
 import ConditionalExtractors.spSess
 
 object caseClsStack{
- import spSess.implicits._
-/*sealed trait ObjCls[+T]*/
-final case class ClickObj(sessID:String,
+   import spSess.implicits._
+  sealed trait BaseClsObject
+  sealed trait CombinerClsObject
+
+  final case class ClickObj(sessID:String,
+                 date:String,
+                 itemID:Long,
+                 pType:String,
+                 sDate:String,
+                 day:String,
+                 hour:Int) extends BaseClsObject
+
+  final case class ClickObjUpdated(sessID:String,
+                        date:String,
+                        itemID:Long,
+                        pType:String,
+                        sDate:String,
+                        day:String,
+                        hour:Int,
+                        specOffer:String) extends BaseClsObject
+
+  final case class ClickObjUpdatednoDummies(sessID:String,
+                                 date:String,
+                                 itemID:Long,
+                                 pType:String,
+                                 sDate:String,
+                                 day:String,
+                                 hour:Int,
+                                 specOffer:String) extends BaseClsObject
+
+
+  final case class BuyObj(sessID:String,
                date:String,
                itemID:Long,
-               pType:String,
+               price:Long,
+               qty:Int,
                sDate:String,
                day:String,
-               hour:Int)
+               hour:Int) extends BaseClsObject
 
- case class ClickObjUpdated(sessID:String,
-                      date:String,
-                      itemID:Long,
-                      pType:String,
-                      sDate:String,
-                      day:String,
-                      hour:Int,
-                      specOffer:String)
+  final case class userPathDF(sessID: String,userPath: Vector[String]) extends BaseClsObject
 
- case class ClickObjUpdatednoDummies(sessID:String,
-                               date:String,
-                               itemID:Long,
-                               pType:String,
-                               sDate:String,
-                               day:String,
-                               hour:Int,
-                               specOffer:String)
+  final case class timeSpentSessionDF(sessID: String,
+                                       sDate: String,
+                                       fDateFinal: String) extends BaseClsObject
 
-  case class TestDummy(sessID:String,
-                date:String,
-                itemID:Long,
-                pType:String,
-                sDate:String,
-                day:String,
-                hour:Int,
-                specOffer:String,
-                caseLbl:Int)
+  final case class sessIDTimePairDF(sessID : String,
+                                    timeSpent: Long) extends BaseClsObject
 
-final case class BuyObj(sessID:String,
-             date:String,
-             itemID:Long,
-             price:Long,
-             qty:Int,
-             sDate:String,
-             day:String,
-             hour:Int)
 
- final case class userPathDF(sessID: String,userPath: Vector[String])
+  final case class itemPopularityPreCounter(sDay:String,
+                                            itemID:Long,
+                                            pCount: Long) extends BaseClsObject
 
- final case class timeSpentSessionDF(sessID: String,
-                                     sDate: String,
-                                     fDateFinal: String)
+  final case class itemAllTimePopularityDF(itemID:Long,
+                                            pCount: Long) extends BaseClsObject
 
- final case class sessIDTimePairDF(sessID : String,
-                                  timeSpent: Long)
+  // Caseclasses for grouping operations
+
+  final case class firstCombiner(sessID:String,
+                                   date:String,
+                                   itemID:Long,
+                                   pType:String,
+                                   sDate:String,
+                                   day:String,
+                                   hour:Int,
+                                   specOffer:String,
+                                   userPath : Vector[String]) extends CombinerClsObject
 }
