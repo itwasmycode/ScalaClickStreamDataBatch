@@ -6,10 +6,10 @@ import frameless.functions._
 
 
 trait PreProcFetcher extends SessionWrapper {
-  /* Implementing classes*/
-
-  import spSess.implicits._
-
+  /** Fetches the preprocessed data to be ready for modelling phase.
+   * There is a railway solution which takes a TypedDataset[ClickObj] and transforms it TypedDataset[ReadyforModel].
+   * These processes are consists of two process. Combiners, Extractors.
+   */
   val pageTypeUpdatedDF: TypedDataset[caseClsStack.ClickObjUpdated] = ConditionalExtractors
     .pageTypeExtractor(typedClickDF)
 
@@ -44,7 +44,8 @@ trait PreProcFetcher extends SessionWrapper {
   val readyForLabelDF: TypedDataset[caseClsStack.baselineAvgPopularityCatFinalEncodedDF] =
     ConditionalExtractors.avgItemPopularity(preCatEncodedDF)
 
-    val readyForModelDF:TypedDataset[caseClsStack.readyForBaseModelDF] = readConditionalExtractors.userPurchaseInfoExtractor(readyForLabelDF,typedBuyDF)
+    val readyForModelDF:TypedDataset[caseClsStack.readyForBaseModelDF] =
+      ConditionalExtractors.userPurchaseInfoExtractor(readyForLabelDF,typedBuyDF)
 
 
 }

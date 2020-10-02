@@ -9,10 +9,18 @@ import frameless._
 import java.text.SimpleDateFormat
 
 object ConditionalExtractors extends SessionWrapper {
+  /*
+  * Transforms and cleans messy data set to useful form that can be used in ML Model.
+   */
    def pageTypeExtractor(df:TypedDataset[caseClsStack.ClickObj])
         : TypedDataset[ClickObjUpdated] = {
-                import spSess.implicits._
-                val testUDF = (pType: String) =>
+     /** Converts a PageType column to three reasonably important category.(Special,brand,missing)
+      *
+      *  @param df TypedDataFrame which has PageType column inside it.
+      * @return TypedDataFrame
+      */
+      import spSess.implicits._
+      val testUDF = (pType: String) =>
                   if (pType == "S") "special"
                   else if (pType.length >= 8) "brand"
                   else "missing"
@@ -31,14 +39,28 @@ object ConditionalExtractors extends SessionWrapper {
   def userPathExtractor(df:TypedDataset[caseClsStack.ClickObj])
         :TypedDataset[caseClsStack.userPathDF] =
   {
+    /** Creates a userPath using how many different page user visited
+     * TODO: Use it in RNN and measure how order of page visiting can change the prediction power.
+     *
+     *  @param df TypedDataFrame which has the PageType.
+     *  @return TypedDataFrame
+     */
           import spSess.implicits._
           df.groupBy(df('sessID))
             .agg(
                     collectSet(df('pType))
             ).as[caseClsStack.userPathDF]
   }
+
  def timeSpentEachSessionExtractor(df: TypedDataset[caseClsStack.ClickObj]): TypedDataset[caseClsStack.sessIDTimePairDF] =
        {
+         /** Creates a column based on user First Seen time in Session and Last. Substracts two of them to find
+          * time spent in this session.
+          *
+          *  @param df TypedDataFrame that has column date column.
+          * @return TypedDataFrame
+          */
+
          import spSess.implicits._
          val strFormat  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
          val testUDF = (sDate: String, fDate: String)=>
@@ -53,12 +75,23 @@ object ConditionalExtractors extends SessionWrapper {
            .as[caseClsStack.sessIDTimePairDF]
  }
   def itemDayPopularityExtractor(df:TypedDataset[caseClsStack.ClickObj]) = {
+    /** Calculates day popularity of item. If it is popular, there is a prior belief it will affect the
+     * status of session.
+     *  @param df TypedDataFrame that has itemID,CurrentDay column.
+     * @return TypedDataFrame
+     */
     import spSess.implicits._
     df.groupBy(df('sDate),df('itemID)).agg(count())
     .as[caseClsStack.itemPopularityPreCounter]
   }
 
   def itemAllTimePopularityExtractor(df:TypedDataset[caseClsStack.ClickObj]): TypedDataset[caseClsStack.itemAllTimePopularityDF] = {
+    /** Calculates all time popularity of item. It uses previous data.
+     * If it is popular, there is a prior belief it will affect the
+     * status of session.
+     *  @param df TypedDataFrame that has itemID column.
+     * @return TypedDataFrame
+     */
     import spSess.implicits._
     df.groupBy(df('itemID)).agg(count())
       .as[caseClsStack.itemAllTimePopularityDF]
@@ -71,6 +104,10 @@ object ConditionalExtractors extends SessionWrapper {
 
   def hourRangeExtractor(df:TypedDataset[caseClsStack.thirdCombiner])
   : TypedDataset[caseClsStack.thirdCombinerHourUpdated]={
+    /** Transforms hour column to binned hour column. There is four 5 bin based on shopping behaviour of users.
+     *  @param df TypedDataFrame that has hour Column.
+     * @return TypedDataFrame
+     */
     import spSess.implicits._
     val hourUDF = (hour:Int)=>
     if ((hour >= 2) && (hour<6)) "latenight"
@@ -88,6 +125,10 @@ object ConditionalExtractors extends SessionWrapper {
 
   def catEncoderPre(df:TypedDataset[caseClsStack.thirdCombinerHourUpdated])
   : TypedDataset[caseClsStack.baselineCatFinalEncodedDF] ={
+    /** It serves for 2 main goal. One is indicator value for weekend, and another one is "item is specialOffer now?"
+     *  @param df TypedDataFrame that has PageType column.
+     * @return TypedDataFrame
+     */
     import spSess.implicits._
     val weekendUDF = (day:String)=>
       if ((day == "Sun") || (day =="Sat")) 1
@@ -108,13 +149,16 @@ object ConditionalExtractors extends SessionWrapper {
       specUDF(dayLabeledDF('specOffer))
     ).as[caseClsStack.baselineCatEncodedDF]
       .drop[caseClsStack.baselineCatFinalEncodedDF]
-
   }
 
   def userPurchaseInfoExtractor(clickDF: TypedDataset[caseClsStack.baselineAvgPopularityCatFinalEncodedDF]
                                 ,checkoutDF: TypedDataset[caseClsStack.BuyObj])=
   {
-
+    /** If user matches with Buying DataFrame it calculates how much product bought.
+     *  @param clickDF TypedDataFrame that is preprocessed.
+     *  @param checkoutDF TypedDataFrame that is defined at the SessionWrapper.
+     * @return TypedDataFrame
+     */
     val transactionCountDF = checkoutDF.groupBy(checkoutDF('sessID))
       .agg(sum(checkoutDF('qty))).as[caseClsStack.sessIDCheckoutCount]
 
@@ -127,6 +171,11 @@ object ConditionalExtractors extends SessionWrapper {
   }
 
   def avgItemPopularity(df: TypedDataset[caseClsStack.baselineCatFinalEncodedDF])={
+    /** Since data wrangling needs to transform base TypedDataset to Final one, for distinct operation
+     * this function uses mean of average popularity of viewed items.
+     *  @param df TypedDataFrame that needs pre calculated data set using Item Popularity functions.
+     * @return TypedDataFrame
+     */
    val averageVisTimeDF =  df.groupBy(df('sessID))
     .agg(avg(df('pCountPartial))).as[caseClsStack.avgItemPopularity]
     val baseJoinedDF = df.joinInner(averageVisTimeDF){

@@ -1,9 +1,26 @@
-import java.sql.Timestamp
-
-import ConditionalExtractors.spSess
-
 object caseClsStack{
-   import spSess.implicits._
+  /** Keeps case classes inside in order to serve when it is required.
+   * Params are parameter for case classes not functions.
+   * For Click Data Set Base Case Class Parameters.
+   *  @param sessID sessID that belongs to transaction. Every sessID unique to user.
+   *  @param date Date belongs to transaction completion time.
+   *  @param itemID Current itemID, it can be view type or in the checkout page.
+   *  @param pType PageType of current event,page. It can be special offer, brand offer or another page type.
+   *  @param sDate Shortened version of Date. Consist day, it needs for GroupBy operations.
+   *  @param day Current day of transaction. In order to measure relationship of day-purchase.
+   *  @param hour Current hour of transaction. In order to measure relationship hour-purchase.
+   * For Buy Data Set Base Case Class Parameters
+   *  @param sessID sessID that belongs to transaction. Every sessID unique to user.
+   *  @param date Date belongs to transaction completion time.
+   *  @param itemID Current itemID, it can be view type or in the checkout page.
+   *  @param price Price of purchased item.
+   *  @param qty Quantity of purchased item.
+   *  @param sDate Shortened version of Date. Consist day, it needs for GroupBy operations.
+   *  @param day Current day of transaction. In order to measure relationship of day-purchase.
+   *  @param hour Current hour of transaction. In order to measure relationship hour-purchase.
+   *
+   * @return Any
+   */
   sealed trait BaseClsObject
 
   final case class ClickObj(sessID:String,
