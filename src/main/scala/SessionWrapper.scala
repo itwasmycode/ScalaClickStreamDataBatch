@@ -38,13 +38,13 @@ trait SessionWrapper  {
     .option("header","TRUE")
     .schema(schemaBuy)
     .csv("src/data/buys.dat")
-    .toDF()).as[caseClsStack.BuyObj]
+    ).as[caseClsStack.BuyObj]
 
   final lazy val clicksDF = dfExtractor(spSess.read
     .option("header","TRUE")
     .schema(schemaClick)
     .csv("src/data/clicks.dat")
-    .toDF()).as[caseClsStack.ClickObj]
+    ).as[caseClsStack.ClickObj]
 
 
 
