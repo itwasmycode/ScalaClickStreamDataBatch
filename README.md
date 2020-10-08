@@ -40,3 +40,5 @@ ClickStream Analysis Project using Frameless-Spark API on Scala using YooChoose 
   * Since there is no best model, try to understand, experiment it adding, using different variables, variables combination, removing, adding features.
   **Note: Alternative way to measuring data by looking accuracy is using oversampling or undersampling algorithms. I didn't choose that for this project.
   
+ ### Deliverable Notebook
+ * [Notebook](https://nbviewer.jupyter.org/github/controlmachine/ScalaClickStreamDataBatch/blob/master/src/main/notebooks/Scala%20CStream.ipynb)
